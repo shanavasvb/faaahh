@@ -4,13 +4,17 @@
   "description": "malayalam-sound-alerts",
   "version": "0.0.1",
   "engines": {
-    "vscode": "^1.109.0"
+    "vscode": "^1.108.0"
   },
   "categories": [
     "Other"
   ],
   "activationEvents": [],
   "main": "./dist/extension.js",
+  "files": [
+    "dist",
+    "sounds"
+  ],
   "contributes": {
     "commands": [
       {
