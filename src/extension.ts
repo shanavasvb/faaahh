@@ -93,6 +93,42 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.window.onDidEndTerminalShellExecution((e) => {
 			const code = e.exitCode;
 			if (code === undefined) { return; }
+
+			// Get the command that was run
+			const command = e.execution.commandLine.value.trim().toLowerCase();
+			console.log(`[SoundAlert] Terminal command: "${command}" exit code: ${code}`);
+
+			// Only play for build/push commands
+			const isBuildCommand = [
+				'npm run build',
+				'npm run dev',
+				'npm run start',
+				'npm test',
+				'npm run test',
+				'yarn build',
+				'yarn test',
+				'make',
+				'cargo build',
+				'cargo test',
+				'go build',
+				'go test',
+				'python',
+				'python3',
+				'node',
+				'flutter build',
+				'gradle build',
+				'mvn package',
+				'docker build',
+			].some(cmd => command.startsWith(cmd));
+
+			const isGitPushCommand = command.startsWith('git push') || command.startsWith('git merge') || command.startsWith('git rebase');
+
+			if (!isBuildCommand && !isGitPushCommand) {
+				console.log(`[SoundAlert] Skipping sound for command: "${command}"`);
+				return; 
+				// ignore git status, ls, cd, etc.
+			}
+
 			const now = Date.now();
 			if (code === 0) {
 				if (now - lastSuccessTime < SOUND_COOLDOWN) { return; }
