@@ -11,6 +11,8 @@ let lastPsstTime = 0;
 let lastSuccessTime = 0;
 let lastFailTime = 0;
 let focusTimer: NodeJS.Timeout;
+let typingTimer: NodeJS.Timeout;
+let hadErrors = false;
 let soundEnabled = true;
 
 const SOUND_COOLDOWN = 3000; // 3 seconds
@@ -84,7 +86,7 @@ export function activate(context: vscode.ExtensionContext) {
 			const code = (session as any)._exitCode;
 			if (code && code !== 0) {
 				playSound('fahhhhh.mp3', context);
-			}
+			} 
 		}),
 
 		// Terminal shell command exit (requires shell integration)
@@ -103,27 +105,28 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 		}),
 
-		// Diagnostics errors
+		// Diagnostics errors — only after user stops typing AND only on new errors
 		vscode.languages.onDidChangeDiagnostics(() => {
-			const now = Date.now();
-			if (now - lastPsstTime < 5000) { return; }
+			clearTimeout(typingTimer);
+			typingTimer = setTimeout(() => {
+				const allDiagnostics = vscode.languages.getDiagnostics();
+				const hasErrors = allDiagnostics.some(([, diags]) =>
+					diags.some(d => d.severity === vscode.DiagnosticSeverity.Error)
+				);
 
-			const allDiagnostics = vscode.languages.getDiagnostics();
-			const hasErrors = allDiagnostics.some(([, diags]) =>
-				diags.some(d => d.severity === vscode.DiagnosticSeverity.Error)
-			);
+				if (hasErrors && !hadErrors) {
+					playSound('pssst.mp3', context);
+				}
 
-			if (hasErrors) {
-				playSound('pssst.mp3', context);
-				lastPsstTime = now;
-			}
+				hadErrors = hasErrors;
+			}, 3000); // wait 3s after user stops typing
 		}),
 
 		// Focus warning listeners
 		vscode.window.onDidChangeActiveTextEditor(() => { resetFocus(); }),
 		vscode.window.onDidChangeTextEditorSelection(() => { resetFocus(); }),
 
-		{ dispose: () => clearInterval(focusTimer) }
+		{ dispose: () => { clearInterval(focusTimer); clearTimeout(typingTimer); } }
 	);
 
 	// Focus timer
@@ -137,6 +140,8 @@ export function activate(context: vscode.ExtensionContext) {
 			playSound('muneere-kann-chimm.mp3', context);
 		}
 	}, 60 * 1000);
+	
 }
+
 
 export function deactivate() {}

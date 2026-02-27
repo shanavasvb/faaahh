@@ -10,7 +10,7 @@
 |---|---|---|
 | **papapa** 🎉 | Build / task / terminal command **succeeds** | Exit code 0 |
 | **fahhhhh** 😩 | Build / task / terminal command **fails** | Exit code non-zero |
-| **psst psst** 🤫 | **Errors detected** while typing | Diagnostics change |
+| **psst psst** 🤫 | **New errors detected** after you stop typing | Diagnostics change (3s delay) |
 | **muneere kann chimm** 😵 | **1 hour** of straight coding | Focus warning |
 
 ---
@@ -74,7 +74,9 @@ Or go to `Settings` → search **"shell integration"** → enable it.
 
 ### `psst psst` triggers on:
 - Any **diagnostic error** reported by the language server (TypeScript, Pylance, rust-analyzer, etc.)
-- Has a **5 second cooldown** to avoid spamming
+- Only plays when **new errors appear** — not for errors that already existed
+- Only fires after you **stop typing for 3 seconds** — never interrupts mid-typing
+- Resets automatically when all errors are cleared
 
 ### `muneere kann chimm` triggers when:
 - You have been **actively coding for 1 hour** without a break
@@ -123,7 +125,7 @@ To test `psst`, open any `.ts` file and type an incomplete expression:
 ```typescript
 let x =
 ```
-Wait a moment — the TypeScript error will trigger the sound.
+Stop typing and wait 3 seconds — the TypeScript error will trigger the sound. It won't fire again unless the errors clear and new ones appear.
 
 ---
 
