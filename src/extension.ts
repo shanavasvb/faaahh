@@ -89,7 +89,6 @@ function playSound(file: string, context: vscode.ExtensionContext) {
 				}
 			});
 		}
-
 		tryPlayer(0);
 	}
 }
