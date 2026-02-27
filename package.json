@@ -16,8 +16,8 @@
   "contributes": {
     "commands": [
       {
-        "command": "malayalam-sound-alerts.helloWorld",
-        "title": "Hello World"
+        "command": "malayalam-sound-alerts.toggle",
+        "title": "Toggle Sound Alerts"
       }
     ]
   },
