@@ -8,7 +8,7 @@ export let soundEnabled = true;
 
 export function toggleSound(): void {
 	soundEnabled = !soundEnabled;
-	vscode.window.showInformationMessage(soundEnabled ? '🔊 Sound Alerts ON' : '🔇 Sound Alerts OFF');
+	vscode.window.showInformationMessage(soundEnabled ? 'Sound Alerts ON' : 'Sound Alerts OFF');
 }
 
 export function playSound(file: string, context: vscode.ExtensionContext): void {
