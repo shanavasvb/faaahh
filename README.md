@@ -154,6 +154,7 @@ npm run compile
 ## License
 
 MIT
+Copyright (c) 2026 Shanavas
 
 ---
 
