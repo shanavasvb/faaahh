@@ -1,5 +1,9 @@
 # Faah — Malayalam Sound Alerts
 
+[![VS Code Marketplace](https://img.shields.io/visual-studio-marketplace/v/shanavas.malayalam-sound-alerts?label=VS%20Code%20Marketplace&logo=visualstudiocode)](https://marketplace.visualstudio.com/items?itemName=shanavas.malayalam-sound-alerts)
+[![Installs](https://img.shields.io/visual-studio-marketplace/i/shanavas.malayalam-sound-alerts)](https://marketplace.visualstudio.com/items?itemName=shanavas.malayalam-sound-alerts)
+[![Rating](https://img.shields.io/visual-studio-marketplace/r/shanavas.malayalam-sound-alerts)](https://marketplace.visualstudio.com/items?itemName=shanavas.malayalam-sound-alerts&ssr=false#review-details)
+
 A VSCode extension that plays Malayalam-themed sound alerts based on what happens in your editor.
 
 ---
