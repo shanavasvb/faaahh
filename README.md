@@ -127,13 +127,6 @@ let x =
 ```
 Stop typing and wait 3 seconds — the TypeScript error will trigger the sound. It won't fire again unless the errors clear and new ones appear.
 
----
-
-## Known Limitations
-
-- Terminal sounds require **shell integration** to be enabled
-- `muneere kann chimm` only tracks activity within the current VSCode session
-- On **Windows**, only `.wav` files are supported by the built-in player
 
 ---
 
