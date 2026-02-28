@@ -1,146 +1,194 @@
-# 🔊 Faah — Malayalam Sound Alerts
+# Faah — Malayalam Sound Alerts
 
-> A VSCode extension that plays Malayalam-themed sound alerts so you *feel* your code, not just see it.
+A VSCode extension that plays Malayalam-themed sound alerts based on what happens in your editor.
 
 ---
 
 ## Sounds
 
-| Sound | Trigger | When |
-|---|---|---|
-| **papapa** 🎉 | Build / task / terminal command **succeeds** | Exit code 0 |
-| **fahhhhh** 😩 | Build / task / terminal command **fails** | Exit code non-zero |
-| **psst psst** 🤫 | **New errors detected** after you stop typing | Diagnostics change (3s delay) |
-| **muneere kann chimm** 😵 | **1 hour** of straight coding | Focus warning |
+| Sound | When It Plays |
+|---|---|
+| **papapa** | Build, task, or terminal command succeeds |
+| **fahhhhh** | Build, task, or terminal command fails |
+| **psst psst** | New errors appear in your code |
+| **muneere kann chimm** | You have been coding for 1 hour straight |
 
 ---
 
-## Features
+## How Each Sound Works
 
-- 🎯 Works with **any programming language** — Python, TypeScript, Java, Rust, Go, Dart, C/C++ and more
-- 💻 Triggers on **terminal commands**, **tasks**, **debug sessions**, and **language errors**
-- ⏰ Built-in **focus warning** after 1 hour of continuous coding
-- 🔇 Easy **toggle** to mute/unmute all sounds via Command Palette
-- 🌍 **Cross-platform** — Linux, macOS, and Windows supported
+**papapa / fahhhhh**
+Triggers when any of the following finish running:
+- Commands in the VSCode integrated terminal (`node app.js`, `python main.py`, `npm run build`, etc.)
+- Tasks defined in `.vscode/tasks.json`
+- Debug sessions launched via F5
+
+Not every terminal command triggers a sound. Only recognised build and git commands do. See the full list below.
+
+**psst psst**
+Triggers immediately when the language server reports new errors in your code. It only plays when errors go from zero to one — not repeatedly while errors already exist. Has a 10 second cooldown between plays.
+
+**muneere kann chimm**
+Triggers after you have been actively coding for 1 hour without a break. Plays once per hour and only while you are still at the keyboard.
+
+---
+
+## Commands That Trigger Sounds
+
+The following terminal commands trigger papapa or fahhhhh based on exit code.
+
+**Build commands**
+- `npm run build`, `npm run dev`, `npm run start`, `npm test`
+- `yarn build`, `yarn test`
+- `make`
+- `cargo build`, `cargo test`
+- `go build`, `go test`
+- `python`, `python3`, `node`
+- `flutter build`
+- `gradle build`, `mvn package`
+- `docker build`
+
+**Git commands**
+- `git push`
+- `git commit`
+- `git merge`
+- `git rebase`
+
+Commands like `git status`, `ls`, `cd`, `cat`, and `echo` are always silent.
 
 ---
 
 ## Requirements
 
 ### Linux
-One of the following audio players must be installed (tried in order):
+One of the following audio players must be installed:
+
 ```bash
-# Option 1 (recommended)
-sudo apt install pulseaudio-utils   # provides paplay
+# Option 1 — recommended
+sudo apt install pulseaudio-utils
 
 # Option 2
 sudo apt install mpg123
 
 # Option 3
-sudo apt install ffmpeg              # provides ffplay
+sudo apt install ffmpeg
 ```
 
 ### macOS
-No setup needed — uses the built-in `afplay` command.
+No setup needed. Uses the built-in `afplay` command.
 
 ### Windows
-No setup needed — uses PowerShell's built-in `Media.SoundPlayer`.
+No setup needed. Uses PowerShell's built-in `Media.SoundPlayer`.
 
-> ⚠️ **Windows Note:** PowerShell's SoundPlayer only supports `.wav` files. Make sure `.wav` versions of sounds are present in the `sounds/` folder alongside the `.mp3` files.
+Note: PowerShell's SoundPlayer only supports `.wav` files. Make sure `.wav` versions of the sounds are present in the `sounds/` folder alongside the `.mp3` files.
 
 ---
 
-## Shell Integration (Required for Terminal Sounds)
+## Shell Integration
 
-For `fahhhhh` and `papapa` to trigger when running commands in the terminal, VSCode shell integration must be enabled.
+For terminal command sounds to work correctly, VSCode shell integration must be enabled. This allows the extension to read the command name and filter sounds precisely.
 
 Add this to your `settings.json`:
+
 ```json
 {
   "terminal.integrated.shellIntegration.enabled": true
 }
 ```
 
-Or go to `Settings` → search **"shell integration"** → enable it.
+### Linux — Recommended Terminal Shell
+
+If you use fish shell, the extension will automatically detect this and offer to set up shell integration for you. Click **Enable Now** when prompted.
+
+For the most reliable experience on Linux, set bash as the default terminal shell in VSCode:
+
+```json
+{
+  "terminal.integrated.defaultProfile.linux": "bash"
+}
+```
+
+This does not change your system shell — only the shell used inside VSCode's terminal.
+
+### What happens without shell integration
+
+When shell integration is not available, the command name cannot be read. In this case:
+- Failed commands (exit code non-zero) still play **fahhhhh**
+- Successful commands also play **papapa** since the extension cannot distinguish between `ls` and `npm run build`
+
+Enabling shell integration gives you precise filtering.
 
 ---
 
-## How It Works
+## Toggle Sounds
 
-### `fahhhhh` / `papapa` triggers on:
-- Any command run in the **VSCode integrated terminal** (`node app.js`, `python main.py`, `./build.sh`, etc.)
-- **Tasks** defined in `.vscode/tasks.json` (`npm run build`, `make`, etc.)
-- **Debug sessions** launched via F5
+You can mute or unmute all sounds without uninstalling the extension.
 
-### `psst psst` triggers on:
-- Any **diagnostic error** reported by the language server (TypeScript, Pylance, rust-analyzer, etc.)
-- Only plays when **new errors appear** — not for errors that already existed
-- Only fires after you **stop typing for 3 seconds** — never interrupts mid-typing
-- Resets automatically when all errors are cleared
-
-### `muneere kann chimm` triggers when:
-- You have been **actively coding for 1 hour** without a break
-- Resets automatically after the alert plays
-
----
-
-## Commands
-
-| Command | Description |
-|---|---|
-| `Toggle Sound Alerts` | Mute or unmute all sounds |
-
-Access via `Ctrl+Shift+P` → type **"Toggle Sound Alerts"**
+`Ctrl+Shift+P` → type **Toggle Sound Alerts**
 
 ---
 
 ## Supported Languages
 
-Works with any language that has a VSCode language extension:
+Works with any language that has a VSCode language extension installed:
 
 - TypeScript / JavaScript
-- Python (with Pylance)
-- Java (with Extension Pack for Java)
-- Rust (with rust-analyzer)
-- Go (with gopls)
+- Python (Pylance)
+- Java (Extension Pack for Java)
+- Rust (rust-analyzer)
+- Go (gopls)
 - Dart / Flutter
-- C / C++ (with clangd or Microsoft C++)
-- PHP, Ruby, Swift, Kotlin, and more
+- C / C++ (clangd or Microsoft C++)
+- PHP, Ruby, Swift, Kotlin, and others
 
 ---
 
-## Testing the Extension
+## Project Structure
+
+```
+src/
+├── extension.ts        Entry point, wires everything together
+├── soundPlayer.ts      Cross-platform sound playback
+├── buildListener.ts    Handles task, terminal, and debug sounds
+├── errorListener.ts    Handles psst on new errors
+├── focusListener.ts    Handles 1 hour focus warning
+└── constants.ts        All tunable values in one place
+```
+
+---
+
+## Testing
 
 Open the VSCode integrated terminal and run:
 
 ```bash
-# Should play papapa 🎉
+# Triggers papapa
 node -e "process.exit(0)"
 
-# Should play fahhhhh 😩
+# Triggers fahhhhh
 node -e "process.exit(1)"
 ```
 
-To test `psst`, open any `.ts` file and type an incomplete expression:
+To test psst, open any `.ts` file and type an incomplete expression:
+
 ```typescript
 let x =
 ```
-Stop typing and wait 3 seconds — the TypeScript error will trigger the sound. It won't fire again unless the errors clear and new ones appear.
 
+The TypeScript error will trigger the sound immediately. It will not play again until all errors clear and new ones appear.
 
 ---
 
 ## Contributing
-
-Pull requests are welcome! To run locally:
 
 ```bash
 git clone https://github.com/shanavas/faah-Malayalam-Version
 cd faah-Malayalam-Version
 npm install
 npm run compile
-# Press F5 in VSCode to launch Extension Development Host
 ```
+
+Press F5 in VSCode to launch the Extension Development Host.
 
 ---
 

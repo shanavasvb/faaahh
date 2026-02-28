@@ -1,8 +1,9 @@
 {
   "name": "malayalam-sound-alerts",
-  "displayName": "Faaah-Malayalam-Version",
+  "displayName": "Faaah(Malayalam-Version)",
   "description": "malayalam-sound-alerts",
-  "version": "0.0.1",
+  "icon": "icon.png",
+  "version": "0.0.2",
   "engines": {
     "vscode": "^1.108.0"
   },
@@ -17,7 +18,23 @@
     "commands": [
       {
         "command": "malayalam-sound-alerts.toggle",
-        "title": "Toggle Sound Alerts"
+        "title": "Faah: Toggle All Sounds"
+      },
+      {
+        "command": "malayalam-sound-alerts.togglePapapa",
+        "title": "Faah: Toggle Success Sound (papapa)"
+      },
+      {
+        "command": "malayalam-sound-alerts.toggleFahhhhh",
+        "title": "Faah: Toggle Fail Sound (fahhhhh)"
+      },
+      {
+        "command": "malayalam-sound-alerts.togglePssst",
+        "title": "Faah: Toggle Error Sound (psst psst)"
+      },
+      {
+        "command": "malayalam-sound-alerts.toggleMuneere",
+        "title": "Faah: Toggle Focus Warning (muneere kann chimm)"
       }
     ]
   },
