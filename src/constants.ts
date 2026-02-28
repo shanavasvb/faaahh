@@ -36,6 +36,13 @@ export const ACTIVITY_WINDOW_MS = 5 * 60_000; // 5 minutes
 export const TYPING_DEBOUNCE_MS = 3_000;
 
 /**
+ * Minimum gap between successive pssst (error) sounds.
+ * Prevents the error chime from repeating on every small edit while
+ * the user is actively fixing a broken file.
+ */
+export const PSST_COOLDOWN_MS = 5_000; // 10 seconds
+
+/**
  * Commands that should never trigger a sound even when shell integration is
  * partially available. These are read-only, non-destructive commands that
  * complete instantly and carry no meaningful success/failure signal.
@@ -94,5 +101,5 @@ export const LINUX_AUDIO_PLAYERS: ReadonlyArray<{ cmd: string; args: (soundPath:
 /**
  * Path to the VS Code fish shell-integration script, relative to `vscode.env.appRoot`.
  */
-export const FISH_INTEGRATION_SCRIPT_REL =
+export const FISH_INTEGRATION_SCRIPT_REL  =
 	'out/vs/workbench/contrib/terminal/common/scripts/shellIntegration.fish';

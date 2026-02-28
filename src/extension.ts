@@ -9,10 +9,10 @@ import {
 	SESSION_MIN_DURATION_MS,
 	FOCUS_ALERT_COOLDOWN_MS,
 	ACTIVITY_WINDOW_MS,
-	TYPING_DEBOUNCE_MS,
+	PSST_COOLDOWN_MS,
+	SILENT_COMMANDS,
 	BUILD_COMMAND_PREFIXES,
 	GIT_ALERT_PREFIXES,
-	SILENT_COMMANDS,
 	LINUX_AUDIO_PLAYERS,
 	FISH_INTEGRATION_SCRIPT_REL,
 } from './constants';
@@ -23,10 +23,10 @@ let lastActivityTime = Date.now();
 let lastFocusAlertTime = 0;
 let lastSuccessTime = 0;
 let lastFailTime = 0;
+let lastPsstTime = 0;
 
-// Timer handles retained so they can be cancelled on deactivation.
+// Timer handle retained so it can be cancelled on deactivation.
 let focusTimer: NodeJS.Timeout;
-let typingTimer: NodeJS.Timeout;
 
 // Tracks whether there were active errors on the last diagnostics check,
 // so the error sound only fires on the transition from clean → broken.
@@ -173,9 +173,8 @@ export function activate(context: vscode.ExtensionContext) {
 		// Plays sounds for terminal commands.
 		// When shell integration is active the command text is available and
 		// only recognised build / git commands trigger sounds.
-		// When shell integration is absent (command is empty string) only
-		// failures are announced — successful no-op commands like `ls` or
-		// `git status` always exit 0 and stay silent.
+		// When shell integration is absent (command is empty) sounds play for
+		// all outcomes — SOUND_COOLDOWN_MS prevents spam from fast commands.
 		vscode.window.onDidEndTerminalShellExecution((e) => {
 			const code = e.exitCode;
 			if (code === undefined) { return; }
@@ -183,20 +182,19 @@ export function activate(context: vscode.ExtensionContext) {
 			const command = e.execution.commandLine.value.trim().toLowerCase();
 
 			if (command !== '') {
-				const isBuildCommand = BUILD_COMMAND_PREFIXES.some(cmd => command.startsWith(cmd));
-				const isGitCommand = GIT_ALERT_PREFIXES.some(cmd => command.startsWith(cmd));
-				if (!isBuildCommand && !isGitCommand) { return; }
-			} else {
-				// Shell integration not available — command text is empty.
-				// Check against the blocklist first (handles cases where partial
-				// integration provides a command), then fall back to suppressing
-				// all successful exits — ls/git status always exit 0 so they
-				// stay silent, while genuine failures still produce sound.
+				// Shell integration working — precise filter.
+				// Silent commands (ls, cd, git status, etc.) are suppressed first,
+				// then only recognised build / git commands are allowed through.
 				const isSilentCommand = SILENT_COMMANDS.some(
 					cmd => command === cmd || command.startsWith(cmd + ' ')
 				);
-				if (isSilentCommand || code === 0) { return; }
+				if (isSilentCommand) { return; }
+
+				const isBuildCommand = BUILD_COMMAND_PREFIXES.some(cmd => command.startsWith(cmd));
+				const isGitCommand = GIT_ALERT_PREFIXES.some(cmd => command.startsWith(cmd));
+				if (!isBuildCommand && !isGitCommand) { return; }
 			}
+			// Empty command: shell integration absent — fall through and play for all exits.
 
 			const now = Date.now();
 			if (code === 0) {
@@ -210,29 +208,31 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 		}),
 
-		// Plays the error sound when the editor transitions from no errors to
-		// having errors, debounced to avoid triggering mid-keystroke.
+		// Plays the error sound immediately when the editor transitions from
+		// no errors to having errors. PSST_COOLDOWN_MS prevents it from
+		// repeating while the user is actively fixing a broken file.
 		vscode.languages.onDidChangeDiagnostics(() => {
-			clearTimeout(typingTimer);
-			typingTimer = setTimeout(() => {
-				const allDiagnostics = vscode.languages.getDiagnostics();
-				const hasErrors = allDiagnostics.some(([, diags]) =>
-					diags.some(d => d.severity === vscode.DiagnosticSeverity.Error)
-				);
+			const now = Date.now();
+			if (now - lastPsstTime < PSST_COOLDOWN_MS) { return; }
 
-				if (hasErrors && !hadErrors) {
-					playSound('pssst.mp3', context);
-				}
+			const allDiagnostics = vscode.languages.getDiagnostics();
+			const hasErrors = allDiagnostics.some(([, diags]) =>
+				diags.some(d => d.severity === vscode.DiagnosticSeverity.Error)
+			);
 
-				hadErrors = hasErrors;
-			}, TYPING_DEBOUNCE_MS);
+			if (hasErrors && !hadErrors) {
+				playSound('pssst.mp3', context);
+				lastPsstTime = now;
+			}
+
+			hadErrors = hasErrors;
 		}),
 
 		// Activity listeners used to determine whether the user is still present.
 		vscode.window.onDidChangeActiveTextEditor(() => { resetFocus(); }),
 		vscode.window.onDidChangeTextEditorSelection(() => { resetFocus(); }),
 
-		{ dispose: () => { clearInterval(focusTimer); clearTimeout(typingTimer); } }
+		{ dispose: () => clearInterval(focusTimer) }
 	);
 
 	// Plays the focus-reminder sound after a long coding session with no break.
