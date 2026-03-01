@@ -237,17 +237,27 @@ export function activate(context: vscode.ExtensionContext) {
 
 			if (command !== '') {
 				// Shell integration working — precise filter.
-				// Silent commands (ls, cd, git status, etc.) are suppressed first,
-				// then only recognised build / git commands are allowed through.
+
+				// Command-not-found (exit 127) always plays fahhhhh immediately,
+				// before any silent-command or build/git filtering.
+				if (code === COMMAND_NOT_FOUND_EXIT_CODE) {
+					const now = Date.now();
+					if (now - lastFailTime < SOUND_COOLDOWN_MS) { return; }
+					lastFailTime = now;
+					playSound('fahhhhh.mp3', context);
+					return;
+				}
+
+				// Silent commands (ls, cd, git status, etc.) are suppressed next.
 				const isSilentCommand = SILENT_COMMANDS.some(
 					cmd => command === cmd || command.startsWith(cmd + ' ')
 				);
 				if (isSilentCommand) { return; }
 
-			const isBuildCommand = BUILD_PATTERNS.some(p => p.test(command));
-			const isGitCommand = GIT_PATTERNS.some(p => p.test(command));
-			const isCommandNotFound = code === COMMAND_NOT_FOUND_EXIT_CODE;
-			if (!isBuildCommand && !isGitCommand && !isCommandNotFound) { return; }
+				// Only recognised build / git commands are allowed through.
+				const isBuildCommand = BUILD_PATTERNS.some(p => p.test(command));
+				const isGitCommand = GIT_PATTERNS.some(p => p.test(command));
+				if (!isBuildCommand && !isGitCommand) { return; }
 			}
 			// Empty command: shell integration absent — fall through and play for all exits.
 
