@@ -1,98 +1,87 @@
-# Faah — Malayalam Sound Alerts
+# Faaah — Malayalam Sound Alerts
 
 [![VS Code Marketplace](https://img.shields.io/visual-studio-marketplace/v/shanavas.malayalam-sound-alerts?label=VS%20Code%20Marketplace&logo=visualstudiocode)](https://marketplace.visualstudio.com/items?itemName=shanavas.malayalam-sound-alerts)
 [![Installs](https://img.shields.io/visual-studio-marketplace/i/shanavas.malayalam-sound-alerts)](https://marketplace.visualstudio.com/items?itemName=shanavas.malayalam-sound-alerts)
 [![Rating](https://img.shields.io/visual-studio-marketplace/r/shanavas.malayalam-sound-alerts)](https://marketplace.visualstudio.com/items?itemName=shanavas.malayalam-sound-alerts&ssr=false#review-details)
 
-A VSCode extension that plays Malayalam-themed sound alerts based on what happens in your editor.
+Your editor now speaks Malayalam. Faah plays culturally satisfying sounds while you code — so you feel every success, failure, and mistake.
 
 ---
 
 ## Sounds
 
-| Sound | When It Plays |
+| Sound | Trigger |
 |---|---|
 | **papapa** | Build, task, or terminal command succeeds |
 | **fahhhhh** | Build, task, or terminal command fails |
 | **psst psst** | New errors appear in your code |
-| **muneere kann chimm** | You have been coding for 1 hour straight |
+| **muneere kann chimm** | 1 hour of continuous coding |
 
 ---
 
-## How Each Sound Works
+## Features
 
-**papapa / fahhhhh**
-Triggers when any of the following finish running:
-- Commands in the VSCode integrated terminal (`node app.js`, `python main.py`, `npm run build`, etc.)
-- Tasks defined in `.vscode/tasks.json`
-- Debug sessions launched via F5
+### Build and Terminal Sounds
+Plays papapa or fahhhhh when commands finish in the integrated terminal, VSCode tasks, or debug sessions. Only meaningful commands trigger sounds — `ls`, `cd`, `git status` and other read-only commands are always silent.
 
-Not every terminal command triggers a sound. Only recognised build and git commands do. See the full list below.
-
-**psst psst**
-Triggers immediately when the language server reports new errors in your code. It only plays when errors go from zero to one — not repeatedly while errors already exist. Has a 10 second cooldown between plays.
-
-**muneere kann chimm**
-Triggers after you have been actively coding for 1 hour without a break. Plays once per hour and only while you are still at the keyboard.
-
----
-
-## Commands That Trigger Sounds
-
-The following terminal commands trigger papapa or fahhhhh based on exit code.
-
-**Build commands**
-- `npm run build`, `npm run dev`, `npm run start`, `npm test`
-- `yarn build`, `yarn test`
-- `make`
-- `cargo build`, `cargo test`
-- `go build`, `go test`
+Recognised commands include:
+- `npm run build / dev / start / test`
+- `yarn build / test`, `pnpm build / test`
+- `cargo build / test`, `go build / test`
 - `python`, `python3`, `node`
-- `flutter build`
-- `gradle build`, `mvn package`
-- `docker build`
+- `flutter build / test`
+- `make`, `tsc`, `jest`, `pytest`, `vitest`
+- `gradle build`, `mvn package`, `docker build`
+- `git push`, `git commit`, `git merge`, `git rebase`
 
-**Git commands**
-- `git push`
-- `git commit`
-- `git merge`
-- `git rebase`
+### Command Not Found
+Plays fahhhhh immediately when you mistype a command and the shell cannot find it. Works automatically — no setup needed.
 
-Commands like `git status`, `ls`, `cd`, `cat`, and `echo` are always silent.
+### Error Sound
+Plays psst psst the moment your language server detects new errors in your code. Only triggers on the transition from no errors to errors — not repeatedly while you are fixing them. Has a 10 second cooldown between plays.
+
+### Focus Warning
+Plays muneere kann chimm after 1 hour of continuous coding while you are still at the keyboard. A gentle reminder to take a break. Plays once per hour.
+
+### Individual Sound Controls
+Every sound can be toggled independently via the Command Palette without disabling the others.
+
+`Ctrl+Shift+P` → type **Faah** to see all available commands:
+
+| Command | What it does |
+|---|---|
+| Faah: Toggle All Sounds | Mute or unmute everything |
+| Faah: Toggle Success Sound (papapa) | Toggle build success sound |
+| Faah: Toggle Fail Sound (fahhhhh) | Toggle build failure sound |
+| Faah: Toggle Error Sound (psst psst) | Toggle code error sound |
+| Faah: Toggle Focus Warning | Toggle 1 hour reminder |
 
 ---
 
 ## Requirements
 
 ### Linux
-One of the following audio players must be installed:
+At least one of the following audio players must be installed:
 
 ```bash
-# Option 1 — recommended
-sudo apt install pulseaudio-utils
-
-# Option 2
-sudo apt install mpg123
-
-# Option 3
-sudo apt install ffmpeg
+sudo apt install pulseaudio-utils   # recommended
+sudo apt install mpg123             # alternative
+sudo apt install ffmpeg             # alternative
 ```
 
 ### macOS
-No setup needed. Uses the built-in `afplay` command.
+No setup needed.
 
 ### Windows
-No setup needed. Uses PowerShell's built-in `Media.SoundPlayer`.
-
-Note: PowerShell's SoundPlayer only supports `.wav` files. Make sure `.wav` versions of the sounds are present in the `sounds/` folder alongside the `.mp3` files.
+No setup needed.
 
 ---
 
 ## Shell Integration
 
-For terminal command sounds to work correctly, VSCode shell integration must be enabled. This allows the extension to read the command name and filter sounds precisely.
+Shell integration allows the extension to read the command name and filter sounds precisely so only build and git commands trigger alerts.
 
-Add this to your `settings.json`:
+Add this to your VSCode `settings.json`:
 
 ```json
 {
@@ -100,11 +89,11 @@ Add this to your `settings.json`:
 }
 ```
 
-### Linux — Recommended Terminal Shell
+### Linux with Fish Shell
 
-If you use fish shell, the extension will automatically detect this and offer to set up shell integration for you. Click **Enable Now** when prompted.
+The extension will detect fish shell automatically and offer to configure shell integration for you. Click **Enable Now** when the prompt appears.
 
-For the most reliable experience on Linux, set bash as the default terminal shell in VSCode:
+For the most reliable experience on Linux, set bash as the default VSCode terminal shell. This only affects the VSCode terminal — your system shell stays unchanged:
 
 ```json
 {
@@ -112,95 +101,20 @@ For the most reliable experience on Linux, set bash as the default terminal shel
 }
 ```
 
-This does not change your system shell — only the shell used inside VSCode's terminal.
+### Without Shell Integration
 
-### What happens without shell integration
-
-When shell integration is not available, the command name cannot be read. In this case:
-- Failed commands (exit code non-zero) still play **fahhhhh**
-- Successful commands also play **papapa** since the extension cannot distinguish between `ls` and `npm run build`
-
-Enabling shell integration gives you precise filtering.
-
----
-
-## Toggle Sounds
-
-You can mute or unmute all sounds without uninstalling the extension.
-
-`Ctrl+Shift+P` → type **Toggle Sound Alerts**
+When shell integration is unavailable the command name cannot be read. In this case all terminal exits trigger sounds since the extension cannot distinguish between `ls` and `npm run build`. Enabling shell integration gives you precise filtering.
 
 ---
 
 ## Supported Languages
 
-Works with any language that has a VSCode language extension installed:
+Works with any language that has a VSCode language extension providing diagnostics:
 
-- TypeScript / JavaScript
-- Python (Pylance)
-- Java (Extension Pack for Java)
-- Rust (rust-analyzer)
-- Go (gopls)
-- Dart / Flutter
-- C / C++ (clangd or Microsoft C++)
-- PHP, Ruby, Swift, Kotlin, and others
-
----
-
-## Project Structure
-
-```
-src/
-├── extension.ts        Entry point, wires everything together
-├── soundPlayer.ts      Cross-platform sound playback
-├── buildListener.ts    Handles task, terminal, and debug sounds
-├── errorListener.ts    Handles psst on new errors
-├── focusListener.ts    Handles 1 hour focus warning
-└── constants.ts        All tunable values in one place
-```
-
----
-
-## Testing
-
-Open the VSCode integrated terminal and run:
-
-```bash
-# Triggers papapa
-node -e "process.exit(0)"
-
-# Triggers fahhhhh
-node -e "process.exit(1)"
-```
-
-To test psst, open any `.ts` file and type an incomplete expression:
-
-```typescript
-let x =
-```
-
-The TypeScript error will trigger the sound immediately. It will not play again until all errors clear and new ones appear.
-
----
-
-## Contributing
-
-```bash
-git clone https://github.com/shanavas/faah-Malayalam-Version
-cd faah-Malayalam-Version
-npm install
-npm run compile
-```
-
-Press F5 in VSCode to launch the Extension Development Host.
+TypeScript, JavaScript, Python, Java, Rust, Go, Dart, Flutter, C, C++, PHP, Ruby, Swift, Kotlin, and others.
 
 ---
 
 ## License
 
-MIT
-Copyright (c) 2026 Shanavas
-
----
-
-*Made with ❤️ and a lot of "fahhhhh" moments*
+MIT — Copyright (c) 2026 Shanavas
