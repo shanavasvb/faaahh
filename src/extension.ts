@@ -217,8 +217,10 @@ export function activate(context: vscode.ExtensionContext) {
 		}),
 
 		// Plays sounds for terminal commands.
-		// When shell integration is active the command text is available and
-		// only recognised build / git commands trigger sounds.
+		// When shell integration is active the command text is available.
+		// Success (exit 0): only recognised build / git commands trigger papapa.
+		// Failure (exit non-zero): always plays fahhhhh, covering command-not-found
+		// (exit 127 on Unix, exit 1 on Windows) and all other failures.
 		// When shell integration is absent (command is empty) sounds play for
 		// all outcomes — SOUND_COOLDOWN_MS prevents spam from fast commands.
 		vscode.window.onDidEndTerminalShellExecution((e) => {
@@ -229,16 +231,19 @@ export function activate(context: vscode.ExtensionContext) {
 
 			if (command !== '') {
 				// Shell integration working — precise filter.
-				// Silent commands (ls, cd, git status, etc.) are suppressed first,
-				// then only recognised build / git commands are allowed through.
+				// Silent commands (ls, cd, git status, etc.) are suppressed first.
 				const isSilentCommand = SILENT_COMMANDS.some(
 					cmd => command === cmd || command.startsWith(cmd + ' ')
 				);
 				if (isSilentCommand) { return; }
 
-				const isBuildCommand = BUILD_COMMAND_PREFIXES.some(cmd => command.startsWith(cmd));
-				const isGitCommand = GIT_ALERT_PREFIXES.some(cmd => command.startsWith(cmd));
-				if (!isBuildCommand && !isGitCommand) { return; }
+				// For success: only recognised build / git commands are allowed.
+				// For failure: any command plays fahhhhh (includes command-not-found on any OS).
+				if (code === 0) {
+					const isBuildCommand = BUILD_COMMAND_PREFIXES.some(cmd => command.startsWith(cmd));
+					const isGitCommand = GIT_ALERT_PREFIXES.some(cmd => command.startsWith(cmd));
+					if (!isBuildCommand && !isGitCommand) { return; }
+				}
 			}
 			// Empty command: shell integration absent — fall through and play for all exits.
 
