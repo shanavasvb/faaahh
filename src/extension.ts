@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
-import { spawn, exec } from 'node:child_process';
+import { spawn, execFile } from 'node:child_process';
 import {
 	SOUND_COOLDOWN_MS,
 	FOCUS_CHECK_INTERVAL_MS,
@@ -11,8 +11,9 @@ import {
 	ACTIVITY_WINDOW_MS,
 	PSST_COOLDOWN_MS,
 	SILENT_COMMANDS,
-	BUILD_COMMAND_PREFIXES,
-	GIT_ALERT_PREFIXES,
+	BUILD_PATTERNS,
+	GIT_PATTERNS,
+	COMMAND_NOT_FOUND_EXIT_CODE,
 	LINUX_AUDIO_PLAYERS,
 	FISH_INTEGRATION_SCRIPT_REL,
 } from './constants';
@@ -66,7 +67,14 @@ function playSound(file: string, context: vscode.ExtensionContext) {
 	}
 
 	if (platform === 'win32') {
-		exec(`powershell -c (New-Object Media.SoundPlayer '${soundPath}').PlaySync()`);
+		execFile('powershell', [
+			'-NoProfile',
+			'-NonInteractive',
+			'-Command',
+			`(New-Object System.Media.SoundPlayer '${soundPath}').PlaySync()`,
+		], (err) => {
+			if (err) { console.error('[SoundAlert] Windows error:', err.message); }
+		});
 	} else if (platform === 'darwin') {
 		spawn('afplay', [soundPath]);
 	} else {
@@ -240,8 +248,8 @@ export function activate(context: vscode.ExtensionContext) {
 				// For success: only recognised build / git commands are allowed.
 				// For failure: any command plays fahhhhh (includes command-not-found on any OS).
 				if (code === 0) {
-					const isBuildCommand = BUILD_COMMAND_PREFIXES.some(cmd => command.startsWith(cmd));
-					const isGitCommand = GIT_ALERT_PREFIXES.some(cmd => command.startsWith(cmd));
+					const isBuildCommand = BUILD_PATTERNS.some(p => p.test(command));
+					const isGitCommand = GIT_PATTERNS.some(p => p.test(command));
 					if (!isBuildCommand && !isGitCommand) { return; }
 				}
 			}

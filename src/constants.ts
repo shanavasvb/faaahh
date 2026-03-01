@@ -64,28 +64,46 @@ export const SILENT_COMMANDS: readonly string[] = [
 ];
 
 /**
- * Terminal prefixes that indicate a long-running build or test command
+ * Exit code emitted by the shell when a command is not found.
+ * Triggers the failure sound regardless of which command was typed.
+ */
+export const COMMAND_NOT_FOUND_EXIT_CODE = 127;
+
+/**
+ * Regex patterns that identify long-running build / test commands
  * worth alerting on when shell integration is available.
  */
-export const BUILD_COMMAND_PREFIXES: readonly string[] = [
-	'npm run build', 'npm run dev', 'npm run start',
-	'npm test', 'npm run test',
-	'yarn build', 'yarn test',
-	'make',
-	'cargo build', 'cargo test',
-	'go build', 'go test',
-	'python', 'python3', 'node',
-	'flutter build',
-	'gradle build', 'mvn package',
-	'docker build',
+export const BUILD_PATTERNS: RegExp[] = [
+	/\bnpm\s+run\s+build\b/i,
+	/\bnpm\s+run\s+dev\b/i,
+	/\bnpm\s+run\s+start\b/i,
+	/\bnpm\s+test\b/i,
+	/\bnpm\s+run\s+test\b/i,
+	/\byarn\s+build\b/i,
+	/\byarn\s+test\b/i,
+	/\bmake\b/,
+	/\bcargo\s+build\b/i,
+	/\bcargo\s+test\b/i,
+	/\bgo\s+build\b/i,
+	/\bgo\s+test\b/i,
+	/\bpython\b/,
+	/\bpython3\b/,
+	/\bnode\b/,
+	/\bflutter\s+build\b/i,
+	/\bgradle\s+build\b/i,
+	/\bmvn\s+package\b/i,
+	/\bdocker\s+build\b/i,
 ];
 
 /**
- * Git sub-commands that mutate remote or branch state and are
- * worth alerting on when shell integration is available.
+ * Regex patterns for git sub-commands that mutate remote or branch state
+ * and are worth alerting on when shell integration is available.
  */
-export const GIT_ALERT_PREFIXES: readonly string[] = [
-	'git push', 'git commit', 'git merge', 'git rebase',
+export const GIT_PATTERNS: RegExp[] = [
+	/\bgit\s+push\b/i,
+	/\bgit\s+commit\b/i,
+	/\bgit\s+merge\b/i,
+	/\bgit\s+rebase\b/i,
 ];
 
 /**
