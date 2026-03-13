@@ -33,15 +33,6 @@ let focusTimer: NodeJS.Timeout;
 // so the error sound only fires on the transition from clean → broken.
 let hadErrors = false;
 
-// Master switch toggled via the `malayalam-sound-alerts.toggle` command.
-let soundEnabled = true;
-
-// Individual sound switches
-let successSoundEnabled = true;
-let failSoundEnabled = true;
-let errorSoundEnabled = true;
-let focusSoundEnabled = true;
-
 /**
  * Resolves and plays a sound file appropriate for the current platform.
  * On Windows, .mp3 files are substituted with their .wav equivalents
@@ -49,13 +40,13 @@ let focusSoundEnabled = true;
  * On Linux, available players are tried in order until one succeeds.
  */
 function playSound(file: string, context: vscode.ExtensionContext) {
-	if (!soundEnabled) { return; }
+	if (!context.globalState.get('soundEnabled', true)) { return; }
 
 	// Check individual sound switches
-	if (file === 'papapa.mp3' && !successSoundEnabled) { return; }
-	if (file === 'fahhhhh.mp3' && !failSoundEnabled) { return; }
-	if (file === 'pssst.mp3' && !errorSoundEnabled) { return; }
-	if (file === 'muneere-kann-chimm.mp3' && !focusSoundEnabled) { return; }
+	if (file === 'papapa.mp3' && !context.globalState.get('successSoundEnabled', true)) { return; }
+	if (file === 'fahhhhh.mp3' && !context.globalState.get('failSoundEnabled', true)) { return; }
+	if (file === 'pssst.mp3' && !context.globalState.get('errorSoundEnabled', true)) { return; }
+	if (file === 'muneere-kann-chimm.mp3' && !context.globalState.get('focusSoundEnabled', true)) { return; }
 
 	const platform = os.platform();
 	const soundFile = platform === 'win32' ? file.replace('.mp3', '.wav') : file;
@@ -164,41 +155,46 @@ export function activate(context: vscode.ExtensionContext) {
 
 		// Toggles all sound alerts on or off via the Command Palette.
 		vscode.commands.registerCommand('malayalam-sound-alerts.toggle', () => {
-			soundEnabled = !soundEnabled;
+			const current = context.globalState.get('soundEnabled', true);
+			void context.globalState.update('soundEnabled', !current);
 			vscode.window.showInformationMessage(
-				soundEnabled ? 'Faah: All sounds ON' : 'Faah: All sounds OFF'
+				current ? 'Faah: All sounds OFF' : 'Faah: All sounds ON'
 			);
 		}),
 
 		// Toggle success sound (papapa)
 		vscode.commands.registerCommand('malayalam-sound-alerts.togglePapapa', () => {
-			successSoundEnabled = !successSoundEnabled;
+			const current = context.globalState.get('successSoundEnabled', true);
+			void context.globalState.update('successSoundEnabled', !current);
 			vscode.window.showInformationMessage(
-				successSoundEnabled ? 'Faah: Success sound ON' : 'Faah: Success sound OFF'
+				current ? 'Faah: Success sound OFF' : 'Faah: Success sound ON'
 			);
 		}),
 
 		// Toggle fail sound (fahhhhh)
 		vscode.commands.registerCommand('malayalam-sound-alerts.toggleFahhhhh', () => {
-			failSoundEnabled = !failSoundEnabled;
+			const current = context.globalState.get('failSoundEnabled', true);
+			void context.globalState.update('failSoundEnabled', !current);
 			vscode.window.showInformationMessage(
-				failSoundEnabled ? 'Faah: Fail sound ON' : 'Faah: Fail sound OFF'
+				current ? 'Faah: Fail sound OFF' : 'Faah: Fail sound ON'
 			);
 		}),
 
 		// Toggle error sound (psst psst)
 		vscode.commands.registerCommand('malayalam-sound-alerts.togglePssst', () => {
-			errorSoundEnabled = !errorSoundEnabled;
+			const current = context.globalState.get('errorSoundEnabled', true);
+			void context.globalState.update('errorSoundEnabled', !current);
 			vscode.window.showInformationMessage(
-				errorSoundEnabled ? 'Faah: Error sound (psst) ON' : 'Faah: Error sound (psst) OFF'
+				current ? 'Faah: Error sound (psst) OFF' : 'Faah: Error sound (psst) ON'
 			);
 		}),
 
 		// Toggle focus warning (muneere kann chimm)
 		vscode.commands.registerCommand('malayalam-sound-alerts.toggleMuneere', () => {
-			focusSoundEnabled = !focusSoundEnabled;
+			const current = context.globalState.get('focusSoundEnabled', true);
+			void context.globalState.update('focusSoundEnabled', !current);
 			vscode.window.showInformationMessage(
-				focusSoundEnabled ? 'Faah: Focus warning ON' : 'Faah: Focus warning OFF'
+				current ? 'Faah: Focus warning OFF' : 'Faah: Focus warning ON'
 			);
 		}),
 
